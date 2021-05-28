@@ -203,15 +203,15 @@ admin.site.register(Country,CountryAdmin)
 # State
 class StateAdmin(admin.ModelAdmin):
     model = State
-    list_display = ('country', 'country_code','state_code','name',)
-    list_filter =  ('country','state_code','name')
+    list_display = ('name', 'country_code','state_code','country',)
+    list_filter =  ('name','state_code','country')
     fieldsets = (
-        (None, {'fields': ('country', 'country_code','name','state_code',)}),
+        (None, {'fields': ('name', 'country_code','country','state_code',)}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields':  ('country', 'country_code','state_code','name',)
+            'fields':  ('name', 'country_code','state_code','country',)
             }
         ),
     )

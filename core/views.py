@@ -1,6 +1,9 @@
 
 import json
 
+from pathlib import Path
+import os
+
 import requests
 from account.models import Account
 from django.contrib.auth.models import Group
@@ -17,6 +20,7 @@ from rest_framework.status import (HTTP_200_OK, HTTP_204_NO_CONTENT,
                                    HTTP_406_NOT_ACCEPTABLE,
                                    HTTP_500_INTERNAL_SERVER_ERROR)
 from rest_framework.views import APIView
+import json
 
 # Filters
 from .filter import *
@@ -41,11 +45,15 @@ def request_filters(request):
 
 @api_view(['GET'])
 def index(request):
-    accounts = Account.objects.all()
-    users = []
-    for account in accounts:
-        users.append(acc_to_dict(account))
-    return Response(users)
+    doctors = Doctor.objects.all()
+    docs = []
+    for doctor in doctors:
+        doctor._mutable = False
+        doc = model_to_dict(doctor)
+        doc['user'] = acc_to_dict(doctor.user)
+        docs.append(doc)
+
+    return Response(docs)
 
 # ======== Doctor =============
 
@@ -101,23 +109,70 @@ def search_prectice(request):
     filters = request_filters(request)
     return Response(filters)
 
+# ====================================================================
+# ==================    I   N   I   T   ==============================
+# ====================================================================
+
+def load_countries(data_file_dir):
+    c = open(file=data_file_dir,encoding='utf-8')
+    country_data = json.load(c)
+
+    countries = []
+    for c in country_data:
+        country = {
+            'name':c['name'],
+            'iso3':c['iso3'],
+            'iso2':c['iso2'],
+            'phone_code':c['phone_code'],
+            'capital':c['capital'],
+            'latitude':c['latitude'],
+            'longitude':c['longitude']
+        }
+        Data = Country(**country)
+        Data.save()
+    
+
+def load_States(data_file_dir):
+    s = open(file=data_file_dir,encoding='utf-8')
+    states_data = json.load(s)
+    for st in states_data:
+        c = Country.objects.get(iso2=st['country_code'])
+        S = {
+            'country':c,
+            'country_code':st['country_code'],
+            'name':st['name'],
+            'state_code':st['state_code']
+        }
+        state = State(**S)
+        print(state)
+        state.save()
+
+def load_Cities(data_file_dir):
+    city_file = open(file=data_file_dir,encoding='utf-8')
+    city_data = json.load(city_file)
+
+    for city in city_data:
+        c = State(**city)
+        print(c)
+
+
 @api_view(['GET'])
 def init_world(request):
-    countries = requests.get('http://192.168.1.103/data/countries.json')
+    current_dir = os.path.dirname(__file__)
+    country_file = "countries.json"
+    states_file = "states.json"
+    cities_file = "cities.json"
 
-    data = json.loads(countries.content)
-    for country in data:
-        c = Country
-        c.name = country["name"]
-        c.phone_code = country['phone_code']
-        c.iso2 = country['iso2']
-        c.iso3 = country['iso3']
-        c.capital = country['capital']
-        c.latitude = country['latitude']
-        c.longitude = country['longitude']
+    # countries_file_dir = os.path.join(current_dir,"init",country_file)
+    # countries = load_countries(countries_file_dir)
 
-        c.objects.create()
-    return Response(json.loads(countries.content))
+    # countries_file_dir = os.path.join(current_dir,"init",states_file)
+    # States = load_States(countries_file_dir)
+
+    cities_data_file = os.path.join(current_dir,"init",cities_file)
+    cities = load_Cities(cities_data_file)
+
+    return Response([])
 
 
 

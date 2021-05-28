@@ -19,8 +19,8 @@ class Country (models.Model):
     name = models.CharField(max_length=60,unique=True,default='')
     iso3 = models.CharField(max_length=3,unique=True,default='c3')
     iso2 = models.CharField(max_length=2,unique=True,default='c2')
-    phone_code = models.CharField(max_length=4,unique=True,default='+000')
-    capital = models.CharField(max_length=60,unique=True,default='')
+    phone_code = models.CharField(max_length=4,default='+000')
+    capital = models.CharField(max_length=60,default='')
 
     latitude = models.CharField(max_length=40,default='00.000000000')
     longitude = models.CharField(max_length=40,default='00.000000000')
@@ -33,7 +33,7 @@ class State (models.Model):
     country = models.ForeignKey(Country,on_delete=models.CASCADE,)
     country_code = models.CharField(max_length=4,default='AAA',null=False,unique=False,blank=False)
     name = models.CharField(max_length=90,default='province')
-    state_code = models.CharField(max_length=4,unique=True,default='StCd')
+    state_code = models.CharField(max_length=8,default='StCd')
 
     def __str__(self):
         return self.name
